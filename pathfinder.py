@@ -1,4 +1,6 @@
 import numpy as np
+import pygame
+import sys
 
 class Node():
 
@@ -20,21 +22,21 @@ class Node():
     def __repr__(self):
         return "({}, {})".format(self.position[0], self.position[1]) if self.visitable else "######"
 
-MAP_HEIGHT = 10
-MAP_WIDTH = 10
+MAP_HEIGHT = 8
+MAP_WIDTH = 8
 
 grid = [[0 for _ in range(MAP_WIDTH)] for _ in range(MAP_HEIGHT)]
+
+"""
 for i in range(2, len(grid)-2):
     for j in range(2, len(grid[i])-2):
         grid[i][j] = 1
+"""
 
 def printGrid(grid):
     for row in grid:
         print(row)
 
-for i in range(len(grid)):
-    for j in range(len(grid[i])):
-        grid[i][j] = Node(i, j) if grid[i][j] == 0 else Node(i, j, False)
 
 def genVisitableNeighbours(node):
     node_i, node_j = node.position
@@ -114,8 +116,51 @@ def pathfind(firstNode, lastNode):
     return reversed(path)
 
 def main():
+
+    pygame.init()
+    size = WINDOW_W, WINDOW_H = 512, 512
+    CELL_W = WINDOW_W / MAP_WIDTH
+    CELL_H = WINDOW_H / MAP_HEIGHT
+    
+    screen = pygame.display.set_mode(size)
+    surface = pygame.display.get_surface()
+
+    editing = True
+    
+    
+
+    while editing:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit(0)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouseW, mouseH = pygame.mouse.get_pos()
+                mouseW = int(mouseW//CELL_W)
+                mouseH = int(mouseH//CELL_H)
+                grid[mouseW][mouseH] = 1 if grid[mouseW][mouseH] == 0 else 0
+                print(mouseW, mouseH)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    print("Space pressed!")
+                    editing = False
+
+        screen.fill((0, 0, 0))
+        for i in range(MAP_HEIGHT):
+            for j in range(MAP_WIDTH):
+                width = 1 if grid[i][j] == 0 else 0
+                color = (0, 255, 0) if grid[i][j] == 0 else (255, 0, 0)
+                pygame.draw.rect(surface, color, pygame.Rect(i*CELL_W, j*CELL_H, CELL_W, CELL_H), width)
+        
+        #pygame.draw.rect(surface, (0, 255, 255), pygame.Rect(0, 0, CELL_W, CELL_H))
+        pygame.display.update()
+
+
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            grid[i][j] = Node(i, j) if grid[i][j] == 0 else Node(i, j, False)
+
     start = grid[0][0]
-    end = grid[9][9]
+    end = grid[MAP_WIDTH - 1][MAP_WIDTH - 1]
 
     path = pathfind(start, end)
     for i in path:
@@ -124,6 +169,31 @@ def main():
 
     printGrid(grid)
     print(", ".join(map(str,path)))
+
+    while 1:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit(0)
+
+        screen.fill((0, 0, 0))
+        for i in range(MAP_HEIGHT):
+            for j in range(MAP_WIDTH):
+                width = 1
+                color = (0, 255, 0)
+                cell = grid[i][j]
+                if not isinstance(cell, Node):
+                    if cell == "****":
+                        width = 0
+                        color = (0, 255, 255)
+                else:
+                    if not cell.visitable:
+                        width = 0
+                        color = (255, 0, 0)
+                
+                pygame.draw.rect(surface, color, pygame.Rect(i*CELL_W, j*CELL_H, CELL_W, CELL_H), width)
+
+        pygame.display.update()
+
 
 if __name__ == "__main__":
     main()

@@ -12,18 +12,21 @@ class Node():
 
     visitable = None
 
-    def __init__(self, i, j):
+    def __init__(self, i, j, visitable = True):
         self.position = (i, j)
         self.neighbours = []
-        self.visitable = True
+        self.visitable = visitable
 
     def __repr__(self):
-        return "({}, {})".format(self.position[0], self.position[1])
+        return "({}, {})".format(self.position[0], self.position[1]) if self.visitable else "######"
 
 MAP_HEIGHT = 10
 MAP_WIDTH = 10
 
 grid = [[0 for _ in range(MAP_WIDTH)] for _ in range(MAP_HEIGHT)]
+for i in range(2, len(grid)-2):
+    for j in range(2, len(grid[i])-2):
+        grid[i][j] = 1
 
 def printGrid(grid):
     for row in grid:
@@ -31,7 +34,7 @@ def printGrid(grid):
 
 for i in range(len(grid)):
     for j in range(len(grid[i])):
-        grid[i][j] = Node(i, j)
+        grid[i][j] = Node(i, j) if grid[i][j] == 0 else Node(i, j, False)
 
 def genVisitableNeighbours(node):
     node_i, node_j = node.position
@@ -94,8 +97,8 @@ def pathfind(firstNode, lastNode):
     found, open_list, closed_list = astarsearch(firstNode, lastNode)
     if found:
         print("Path found!")
-        print(open_list)
-        print(closed_list)
+        #print(open_list)
+        #print(closed_list)
     else:
         print("No path found")
         return []
@@ -108,13 +111,19 @@ def pathfind(firstNode, lastNode):
         lastNode = lastNode.parent
         #print(path)
     
-    return reversed(list(map(str, path)))
+    return reversed(path)
 
 def main():
     start = grid[0][0]
-    end = grid[4][4]
+    end = grid[9][9]
 
-    print(", ".join(pathfind(start, end)))
+    path = pathfind(start, end)
+    for i in path:
+        r, c = i
+        grid[r][c] = "****"
+
+    printGrid(grid)
+    print(", ".join(map(str,path)))
 
 if __name__ == "__main__":
     main()

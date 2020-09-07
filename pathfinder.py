@@ -64,24 +64,22 @@ def astarsearch(start: Node, end: Node):
         neighbours = genVisitableNeighbours(q)
         
         for neighbour in neighbours:
+
             if neighbour.position == end.position:
                 neighbour.parent = q
                 return (True, open_list, closed_list)
-            
-            neighbour_q_distance = 1
-            neighbour.g = q.g + neighbour_q_distance
-            neighbour.h = h(neighbour, end)
-            neighbour.f = neighbour.g + neighbour.h
 
-            if len(list(filter(lambda x: x.position == neighbour.position and x.f < neighbour.f, open_list))) > 0:
-                continue
-
-            if len(list(filter(lambda x: x.f < neighbour.f and x.position == neighbour.position, closed_list))) > 0:
-                continue
-
-            neighbour.parent = q
-
-            open_list.append(neighbour)
+            if neighbour not in closed_list: 
+                neighbour_q_distance = 1
+                neighbour.g = q.g + neighbour_q_distance
+                neighbour.h = h(neighbour, end)
+                neighbour.f = neighbour.g + neighbour.h
+                if neighbour not in open_list:
+                    open_list.append(neighbour)
+                    neighbour.parent = q
+                else:
+                    if len(list(filter(lambda x: x.position == neighbour.position and x.f < neighbour.f, open_list))) == 0:
+                         open_list.append(neighbour)
 
         closed_list.append(q)
 
@@ -96,20 +94,20 @@ def pathfind(firstNode, lastNode):
     found, open_list, closed_list = astarsearch(firstNode, lastNode)
     if found:
         print("Path found!")
+        print(open_list)
+        print(closed_list)
     else:
         print("No path found")
         return []
 
     path = []
 
-    while lastNode.position not in path:
-        print(lastNode.parent.position)
+    while lastNode and lastNode.position not in path:
+        #print(lastNode.parent.position)
         path.append(lastNode.position)
         lastNode = lastNode.parent
-        print(path)
+        #print(path)
     
-    path.append(firstNode.position)
-
     return reversed(list(map(str, path)))
 
 def main():
